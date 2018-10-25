@@ -82,6 +82,7 @@ public class DefaultTaskDependency extends AbstractTaskDependency {
         queue.addAll(mutableValues);
         while (!queue.isEmpty()) {
             Object dependency = queue.removeFirst();
+            System.out.println("Jeff DefaultTaskDependency(" + this + ").visitDependencies checking dependency " + dependency);
             if (dependency instanceof Buildable) {
                 context.add(dependency);
             } else if (dependency instanceof Task) {
@@ -195,6 +196,11 @@ public class DefaultTaskDependency extends AbstractTaskDependency {
         getMutableValues().add(dependency);
     }
 
+
+    @Override
+    public String toString() {
+      return "DefaultTaskDependency: " + this.mutableValues + "+" + this.immutableValues;
+    }
     private static class TaskDependencySet implements Set<Object> {
         private final Set<Object> delegate = Sets.newHashSet();
 
@@ -291,6 +297,11 @@ public class DefaultTaskDependency extends AbstractTaskDependency {
         @Override
         public int hashCode() {
             return delegate.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return this.delegate.toString();
         }
     }
 }

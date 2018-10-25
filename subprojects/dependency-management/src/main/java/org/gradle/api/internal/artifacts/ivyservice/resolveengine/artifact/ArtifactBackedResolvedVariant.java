@@ -16,6 +16,7 @@
 
 package org.gradle.api.internal.artifacts.ivyservice.resolveengine.artifact;
 
+import org.gradle.internal.UncheckedException;
 import org.gradle.api.Buildable;
 import org.gradle.api.artifacts.component.ComponentArtifactIdentifier;
 import org.gradle.api.attributes.AttributeContainer;
@@ -90,6 +91,11 @@ class ArtifactBackedResolvedVariant implements ResolvedVariant {
             this.variantName = variantName;
             this.variantAttributes = variantAttributes;
             this.artifact = artifact;
+            String tostr = this.toString();
+            if (tostr.contains("core.aar") && tostr.contains("project")) {
+              UncheckedException.throwAsUncheckedException(new Exception("Jeff illegal artifact " + this));
+            }
+            System.out.println("Created ArtifactBackedResolvedVariant$SingleArtifactSet '" + tostr + "'");
         }
 
         @Override
@@ -159,6 +165,7 @@ class ArtifactBackedResolvedVariant implements ResolvedVariant {
                     context.setResult(DownloadArtifactBuildOperationType.RESULT);
                 }
             } catch (Throwable t) {
+                System.out.println("Jeff ArtifactBackedResolvedVariant run failed " + t);
                 owner.failure = t;
             }
         }

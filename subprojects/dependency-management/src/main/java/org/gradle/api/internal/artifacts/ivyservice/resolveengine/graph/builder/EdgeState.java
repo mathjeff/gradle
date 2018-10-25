@@ -16,6 +16,8 @@
 
 package org.gradle.api.internal.artifacts.ivyservice.resolveengine.graph.builder;
 
+import org.gradle.internal.component.external.model.ConfigurationBoundExternalDependencyMetadata;
+import org.gradle.internal.UncheckedException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.gradle.api.Transformer;
@@ -25,7 +27,6 @@ import org.gradle.api.artifacts.result.ComponentSelectionReason;
 import org.gradle.api.internal.artifacts.ivyservice.resolveengine.excludes.ModuleExclusion;
 import org.gradle.api.internal.artifacts.ivyservice.resolveengine.graph.DependencyGraphEdge;
 import org.gradle.api.internal.attributes.ImmutableAttributes;
-import org.gradle.internal.component.external.model.ConfigurationBoundExternalDependencyMetadata;
 import org.gradle.internal.component.local.model.DslOriginDependencyMetadata;
 import org.gradle.internal.component.model.ComponentArtifactMetadata;
 import org.gradle.internal.component.model.ComponentResolveMetadata;
@@ -34,7 +35,6 @@ import org.gradle.internal.component.model.DependencyMetadata;
 import org.gradle.internal.component.model.ExcludeMetadata;
 import org.gradle.internal.component.model.IvyArtifactName;
 import org.gradle.internal.resolve.ModuleVersionResolveException;
-
 import org.gradle.util.CollectionUtils;
 
 import javax.annotation.Nullable;
@@ -44,10 +44,10 @@ import java.util.List;
  * Represents the edges in the dependency graph.
  *
  * A dependency can have the following states:
- * 1. Unattached: in this case the state of the dependency is  tied to the state of it's associated {@link SelectorState}.
+ * 1. Unattached: in this case the state of the dependency is  tied to the state of its associated {@link SelectorState}.
  * 2. Attached: in this case the Edge has been connected to actual nodes in the target component. Only possible if the {@link SelectorState} did not fail to resolve.
  */
-class EdgeState implements DependencyGraphEdge {
+public class EdgeState implements DependencyGraphEdge {
     private final DependencyState dependencyState;
     private final DependencyMetadata dependencyMetadata;
     private final NodeState from;
@@ -68,11 +68,18 @@ class EdgeState implements DependencyGraphEdge {
         this.resolveState = resolveState;
         this.selector = resolveState.getSelector(dependencyState, dependencyState.getModuleIdentifier());
         this.isTransitive = from.isTransitive() && dependencyMetadata.isTransitive();
+        this.debugCheck();
+    }
+
+    public void debugCheck() {
+        if (this.toString().contains("jeff-core.aar (project :jeff-core)") && this.contributesArtifacts()) {
+          UncheckedException.throwAsUncheckedException(new Exception("EdgeState is in wrong state"));
+        }
     }
 
     @Override
     public String toString() {
-        return String.format("%s -> %s", from.toString(), dependencyMetadata);
+        return String.format("EdgeState (%s -> %s)", from.toString(), dependencyMetadata);
     }
 
     @Override
@@ -80,7 +87,7 @@ class EdgeState implements DependencyGraphEdge {
         return from;
     }
 
-    DependencyMetadata getDependencyMetadata() {
+    public DependencyMetadata getDependencyMetadata() {
         return dependencyMetadata;
     }
 
@@ -106,6 +113,7 @@ class EdgeState implements DependencyGraphEdge {
     }
 
     public void attachToTargetConfigurations() {
+        System.out.println("Jeff EdgeState " + this + " attaching to target configurations");
         ComponentState targetComponent = getTargetComponent();
         if (targetComponent == null) {
             // The selector failed or the module has been deselected. Do not attach.
@@ -121,6 +129,7 @@ class EdgeState implements DependencyGraphEdge {
     }
 
     public void removeFromTargetConfigurations() {
+        System.out.println("Jeff EdgeState " + this + " removing from target configurations");
         if (!targetNodes.isEmpty()) {
             for (NodeState targetConfiguration : targetNodes) {
                 targetConfiguration.removeIncomingEdge(this);
@@ -175,19 +184,30 @@ class EdgeState implements DependencyGraphEdge {
             NodeState targetNodeState = resolveState.getNode(targetComponent, targetConfiguration);
             ComponentState targetComponentState = targetNodeState.getComponent();
 
+            
+
             boolean include = true;
             String ourVersion = null;
             if (this.getDependencyMetadata() instanceof ConfigurationBoundExternalDependencyMetadata) {
               ConfigurationBoundExternalDependencyMetadata converted = (ConfigurationBoundExternalDependencyMetadata)(this.getDependencyMetadata());
               ourVersion = converted.getDependencyDescriptor().getSelector().getVersion();
             }
+
             String theirVersion = targetComponentState.getVersion();
+            //String targetComponentVersion = this.dependencyMetadata.getSelector().getVersion();
+            //String targetComponentVersion = targetComponent.getVersion();
+            //String targetNodeStateVersion = targetNodeState.getComponent().getVersion();
 
+            //boolean wantsPom = (this isinstance ExternalDependencyDescriptor);
+            //boolean isPom = (targetNodeState.getComponent()
+
+
+            System.out.println("Jeff EdgeState sees targetNodeState = " + targetNodeState + " with version (" + theirVersion + ") (EdgeState's version: " + ourVersion + ")");
+            //if (false) { //if (targetComponentVersion != null && targetNodeStateVersion != null && !targetComponentVersion.equals(targetNodeStateVersion)) {
             if (ourVersion != null && theirVersion != null && ourVersion != theirVersion) {
-              include = false;
-            }
-
-            if (include) {
+              System.out.println("Jeff EdgeState skipping targetNodeState = " + targetNodeState + " with version (" + theirVersion + ") != EdgeState's version: " + ourVersion);
+            } else {
+              System.out.println("Jeff EdgeState identified targetNodeState = " + targetNodeState + "(" + targetNodeState.getClass() + ") for targetComponent " + targetComponent + "(" + targetComponent.getClass() + ") and targetConfiguration " + targetConfiguration + " and EdgeState metadata " + this.getDependencyMetadata() + " (" +  this.getDependencyMetadata().getClass() + ")");
               this.targetNodes.add(targetNodeState);
             }
         }

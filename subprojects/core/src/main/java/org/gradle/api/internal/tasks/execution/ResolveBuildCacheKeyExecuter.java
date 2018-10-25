@@ -80,6 +80,7 @@ public class ResolveBuildCacheKeyExecuter implements TaskExecuter {
     }
 
     private void resolve(final TaskInternal task, final TaskExecutionContext context) {
+        System.out.println("Jeff ResolveBuildCacheKeyExecuter resolve(" + task + ", " + context + ")");
         /*
             This operation represents the work of analyzing the inputs.
             Therefore, it should encompass all of the file IO and compute necessary to do this.

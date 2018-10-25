@@ -84,5 +84,10 @@ public class DefaultPublishArtifactSet extends DelegatingDomainObjectSet<Publish
                 context.add(publishArtifact);
             }
         }
+
+        @Override
+        public String toString() {
+          return "(" + DefaultPublishArtifactSet.this + ").ArtifactsFileCollection";
+        }
     }
 }

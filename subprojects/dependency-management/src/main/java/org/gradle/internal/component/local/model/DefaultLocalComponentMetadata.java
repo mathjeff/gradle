@@ -482,7 +482,7 @@ public class DefaultLocalComponentMetadata implements LocalComponentMetadata, Bu
                 }
             }
 
-            return new MissingLocalArtifactMetadata(componentId, ivyArtifactName);
+            return new MissingLocalArtifactMetadata(componentId, ivyArtifactName, getArtifacts());
         }
 
         @Override

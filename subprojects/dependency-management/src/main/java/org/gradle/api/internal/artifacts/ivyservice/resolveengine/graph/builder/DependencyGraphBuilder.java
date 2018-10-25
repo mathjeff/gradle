@@ -135,6 +135,7 @@ public class DependencyGraphBuilder {
      * Traverses the dependency graph, resolving conflicts and building the paths from the root configuration.
      */
     private void traverseGraph(final ResolveState resolveState) {
+        System.out.println("Jeff DependencyGraphBuilder traverseGraph");
         resolveState.onMoreSelected(resolveState.getRoot());
         final List<EdgeState> dependencies = Lists.newArrayList();
         final Map<ModuleVersionIdentifier, ComponentIdentifier> componentIdentifierCache = Maps.newHashMap();
@@ -144,7 +145,7 @@ public class DependencyGraphBuilder {
         while (resolveState.peek() != null || moduleConflictHandler.hasConflicts() || capabilitiesConflictHandler.hasConflicts()) {
             if (resolveState.peek() != null) {
                 final NodeState node = resolveState.pop();
-                LOGGER.debug("Visiting configuration {}.", node);
+                System.out.println("Visiting configuration " + node);
 
                 // Register capabilities for this node
                 registerCapabilities(resolveState, node.getComponent());
@@ -156,8 +157,10 @@ public class DependencyGraphBuilder {
             } else {
                 // We have some batched up conflicts. Resolve the first, and continue traversing the graph
                 if (moduleConflictHandler.hasConflicts()) {
+                    System.out.println("Jeff DependencyGraphBuilder resolving module conflict");
                     moduleConflictHandler.resolveNextConflict(resolveState.getReplaceSelectionWithConflictResultAction());
                 } else {
+                    System.out.println("Jeff DependencyGraphBuilder resolving capabilities conflict");
                     capabilitiesConflictHandler.resolveNextConflict(resolveState.getReplaceSelectionWithConflictResultAction());
                 }
             }
@@ -230,6 +233,7 @@ public class DependencyGraphBuilder {
         ComponentState selected;
         try {
             selected = selectorStateResolver.selectBest(module.getId(), module.getSelectors());
+            System.out.println("Jeff DependencyGraphBuilder.performSelection(" + resolveState + ", " + module + ") selecting best (" + module.getId() + ", " + module.getSelectors() + ") has selected = " + selected);
         } catch (ModuleVersionResolveException e) {
             // Ignore: All selectors failed, and will have failures recorded
             return;
@@ -239,16 +243,19 @@ public class DependencyGraphBuilder {
         if (currentSelection == null) {
             module.select(selected);
             // This is the first time we've seen the module, so register with conflict resolver.
+            System.out.println("Jeff DependencyGraphBuilder.performSelection checking for module conflicts with resolveState = " + resolveState + ", module = " + module);
             checkForModuleConflicts(resolveState, module);
             return;
         }
 
         // If current selection is still the best choice, then only need to point new edge/selector at current selection.
         if (selected == currentSelection) {
+            System.out.println("Jeff DependencyGraphBuilder.performSelection currentSelection is still selected");
             return;
         }
 
         // New candidate is a preferred choice over current selection. Reset the module state and reselect.
+        System.out.println("Jeff DependencyGraphBuilder.performSelection changing selection: module = " + module + ", selected = " + selected + ", currentSelection = " + currentSelection);
         module.changeSelection(selected);
     }
 
@@ -257,7 +264,7 @@ public class DependencyGraphBuilder {
         PotentialConflict c = moduleConflictHandler.registerCandidate(module);
         if (c.conflictExists()) {
             // We have a conflict
-            LOGGER.debug("Found new conflicting module {}", module);
+            System.out.println("Found new conflicting module " + module);
 
             // For each module participating in the conflict, deselect the currently selection, and remove all outgoing edges from the version.
             // This will propagate through the graph and prune configurations that are no longer required.
@@ -400,6 +407,7 @@ public class DependencyGraphBuilder {
                 queue.remove(0);
                 for (NodeState node : component.getNodes()) {
                     if (node.isSelected()) {
+                        System.out.println("Jeff DependencyGraphVisitor.assembleResult visiting " + node);
                         visitor.visitEdges(node);
                     }
                 }

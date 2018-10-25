@@ -16,6 +16,7 @@
 
 package org.gradle.api.internal.artifacts.transform;
 
+import org.gradle.internal.UncheckedException;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -125,6 +126,13 @@ public abstract class TransformInfo extends WorkInfo {
         ) {
             super(artifactTransformer);
             this.artifactSet = artifactSet;
+            String name = artifactSet.getArtifactId().getDisplayName();
+            System.out.println("Jeff InitialTransformInfo artifactSet = " + artifactSet + " named " + name);
+            /*if ("jeff-core.aar (project :jeff-core)".equals(name)) {
+              UncheckedException.throwAsUncheckedException(new Exception("Jeff Illegal initialTransformInfo for artifactSet " + artifactSet + " named " + name + " and transformer " + artifactTransformer));
+            } else {
+              System.out.println("Jeff InitialTransformInfo not concerned by artifact named '" + name + "'");
+            }*/
         }
 
         @Override
@@ -159,7 +167,7 @@ public abstract class TransformInfo extends WorkInfo {
 
             @Override
             public BuildOperationDescriptor.Builder description() {
-                String displayName = "Transform " + artifactSet.getArtifactId().getDisplayName() + " with " + artifactTransformer.getDisplayName();
+                String displayName = "Jeff InitialArtifactTransformationStepOperation Transform " + artifactSet.getArtifactId().getDisplayName() + " with " + artifactTransformer.getDisplayName();
                 return BuildOperationDescriptor.displayName(displayName)
                     .progressDisplayName(displayName)
                     .operationType(BuildOperationCategory.TRANSFORM);
@@ -257,7 +265,7 @@ public abstract class TransformInfo extends WorkInfo {
 
             @Override
             public BuildOperationDescriptor.Builder description() {
-                String displayName = "Transform " + artifactId.getDisplayName() + " with " + artifactTransformer.getDisplayName();
+                String displayName = "Jeff ChainedTransformInfo Transform " + artifactId.getDisplayName() + " with " + artifactTransformer.getDisplayName();
                 return BuildOperationDescriptor.displayName(displayName)
                     .progressDisplayName(displayName)
                     .operationType(BuildOperationCategory.TRANSFORM);

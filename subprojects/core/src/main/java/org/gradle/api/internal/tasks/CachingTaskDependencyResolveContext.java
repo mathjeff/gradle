@@ -23,6 +23,7 @@ import org.gradle.api.NonNullApi;
 import org.gradle.api.Task;
 import org.gradle.internal.graph.CachingDirectedGraphWalker;
 import org.gradle.internal.graph.DirectedGraph;
+import org.gradle.api.tasks.TaskDependency;
 
 import javax.annotation.Nullable;
 import java.util.ArrayDeque;
@@ -93,13 +94,18 @@ public class CachingTaskDependencyResolveContext<T> implements TaskDependencyRes
             if (node instanceof TaskDependencyContainer) {
                 TaskDependencyContainer taskDependency = (TaskDependencyContainer) node;
                 queue.clear();
+                System.out.println("Jeff CachingTaskDependencyResolveContext starting to resolve node " + node + " with TaskDependencyContainer " + taskDependency);
                 taskDependency.visitDependencies(CachingTaskDependencyResolveContext.this);
+                System.out.println("Jeff CachingTaskDependencyResolveContext resolved node " + node + " with TaskDependencyContainer " + taskDependency + " to " + queue);
                 connectedNodes.addAll(queue);
             } else if (node instanceof Buildable) {
                 Buildable buildable = (Buildable) node;
-                connectedNodes.add(buildable.getBuildDependencies());
+                TaskDependency dependency = buildable.getBuildDependencies();
+                System.out.println("Jeff CachingTaskDependencyResolveContext resolved node " + node + " with Buildable to " + dependency);
+                connectedNodes.add(dependency);
             } else {
                 boolean handled = false;
+                System.out.println("Jeff CachingTaskDependencyResolveContext trying to resolve node " + node + " with workResolvers for task " + task);
                 for (WorkDependencyResolver<T> workResolver : workResolvers) {
                     if (workResolver.resolve(task, node, new Action<T>() {
                         @Override

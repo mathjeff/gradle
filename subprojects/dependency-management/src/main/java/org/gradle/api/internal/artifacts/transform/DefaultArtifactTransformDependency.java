@@ -60,4 +60,9 @@ public class DefaultArtifactTransformDependency implements ArtifactTransformDepe
         result = 31 * result + artifacts.hashCode();
         return result;
     }
+
+    @Override
+    public String toString() {
+      return "DefaultArtifactTransformDependency: (transform=" + this.transform + ", artifacts = " + this.artifacts + "(" + this.artifacts.getClass() + "))";
+    }
 }

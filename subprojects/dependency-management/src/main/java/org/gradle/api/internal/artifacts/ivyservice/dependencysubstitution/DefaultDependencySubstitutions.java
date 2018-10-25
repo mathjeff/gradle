@@ -134,6 +134,7 @@ public class DefaultDependencySubstitutions implements DependencySubstitutionsIn
 
     @Override
     public Substitution substitute(final ComponentSelector substituted) {
+        System.out.println("Jeff DefaultDependencySubstitutions substitute " + substituted);
         return new Substitution() {
             ComponentSelectionDescriptorInternal substitutionReason = (ComponentSelectionDescriptorInternal) reason;
             @Override

@@ -307,6 +307,7 @@ class NodeState implements DependencyGraphNode {
 
         DependencySubstitutionInternal details = substitutionResult.getResult();
         if (details != null && details.isUpdated()) {
+            System.out.println("Jeff NodeState.maybeSubstitute replacing dependencyState " + dependencyState + " with target " + details.getTarget() + " and description " + details.getSelectionDescription());
             return dependencyState.withTarget(details.getTarget(), details.getSelectionDescription());
         }
         return dependencyState;
@@ -358,6 +359,7 @@ class NodeState implements DependencyGraphNode {
     }
 
     public boolean isSelected() {
+        System.out.println("Incoming edges of " + this + " = " + this.incomingEdges);
         return !incomingEdges.isEmpty();
     }
 

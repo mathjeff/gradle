@@ -94,7 +94,15 @@ public class DefaultProjectDependency extends AbstractModuleDependency implement
     public Set<File> resolve(boolean transitive) {
         CachingDependencyResolveContext context = new CachingDependencyResolveContext(transitive, Collections.<String, String>emptyMap());
         context.add(this);
-        return context.resolve().getFiles();
+        Set<File> result = null;
+        try {
+          result = context.resolve().getFiles();
+        } finally {
+          if (result == null) {
+            System.out.println("Failed to resolve DefaultProjectDependency " + this + " for project " + this.dependencyProject);
+          }
+        }
+        return result;
     }
 
     public void beforeResolved() {

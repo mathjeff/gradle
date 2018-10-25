@@ -176,6 +176,7 @@ public class CachingDirectedGraphWalker<N, T> {
         for (N startNode : startNodes) {
             values.addAll(cachedNodeValues.get(startNode));
         }
+        System.out.println("Jeff CachingDirectedGraphWalker (startNodes = " + this.startNodes + ") returning " + values);
         return values;
     }
 

@@ -16,6 +16,7 @@
 
 package org.gradle.internal.component.local.model;
 
+import org.gradle.internal.UncheckedException;
 import org.gradle.api.artifacts.component.ComponentArtifactIdentifier;
 import org.gradle.api.artifacts.component.ComponentIdentifier;
 import org.gradle.api.internal.tasks.TaskDependencies;
@@ -24,6 +25,7 @@ import org.gradle.internal.DisplayName;
 import org.gradle.internal.component.model.IvyArtifactName;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Represents an unknown local artifact, referenced from a dependency definition.
@@ -31,14 +33,17 @@ import java.io.File;
 public class MissingLocalArtifactMetadata implements LocalComponentArtifactMetadata, ComponentArtifactIdentifier, DisplayName {
     private final ComponentIdentifier componentIdentifier;
     private final IvyArtifactName name;
+    private final List<?> candidates;
 
-    public MissingLocalArtifactMetadata(ComponentIdentifier componentIdentifier, IvyArtifactName artifactName) {
+    public MissingLocalArtifactMetadata(ComponentIdentifier componentIdentifier, IvyArtifactName artifactName, List<?> candidates) {
         this.componentIdentifier = componentIdentifier;
         this.name = artifactName;
+        this.candidates = candidates;
+        UncheckedException.throwAsUncheckedException(new Exception("Jeff Creating MissingLocalArtifactMetadata " + this));
     }
 
     public String getDisplayName() {
-        return name + " (" + componentIdentifier.getDisplayName()+ ")";
+        return name + " (from " + componentIdentifier.getDisplayName()+ " (all candidates = " + this.candidates + "))";
     }
 
     @Override

@@ -32,4 +32,9 @@ public class ClosureSpec<T> implements Spec<T> {
         Object value = closure.call(element);
         return (Boolean)InvokerHelper.invokeMethod(value, "asBoolean", null);
     }
+
+    @Override
+    public String toString() {
+      return "ClosureSpec: " + this.closure;
+    }
 }

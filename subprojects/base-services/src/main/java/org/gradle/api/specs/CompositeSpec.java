@@ -98,4 +98,9 @@ public abstract class CompositeSpec<T> implements Spec<T> {
     public int hashCode() {
         return Arrays.hashCode(specs);
     }
+
+    @Override
+    public String toString() {
+      return "CompositeSpec: " + this.specs;
+    }
 }

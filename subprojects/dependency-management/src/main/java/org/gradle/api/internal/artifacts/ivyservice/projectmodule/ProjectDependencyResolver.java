@@ -15,6 +15,8 @@
  */
 package org.gradle.api.internal.artifacts.ivyservice.projectmodule;
 
+import org.gradle.internal.UncheckedException;
+import org.gradle.api.internal.project.ProjectState;
 import org.gradle.api.artifacts.component.ComponentArtifactIdentifier;
 import org.gradle.api.artifacts.component.ComponentIdentifier;
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier;
@@ -96,6 +98,7 @@ public class ProjectDependencyResolver implements ComponentMetaDataResolver, Dep
         if (dependency.getSelector() instanceof ProjectComponentSelector) {
             ProjectComponentSelector selector = (ProjectComponentSelector) dependency.getSelector();
             ProjectComponentIdentifier projectId = componentIdentifierFactory.createProjectComponentIdentifier(selector);
+            System.out.println("Jeff ProjectDependencyResolver.resolve with projectId = " + projectId);
             LocalComponentMetadata componentMetaData = localComponentRegistry.getComponent(projectId);
             if (componentMetaData == null) {
                 result.failed(new ModuleVersionResolveException(selector, projectId + " not found."));
@@ -148,20 +151,28 @@ public class ProjectDependencyResolver implements ComponentMetaDataResolver, Dep
 
     @Override
     public void resolveArtifact(ComponentArtifactMetadata artifact, ModuleSource moduleSource, final BuildableArtifactResolveResult result) {
+        final ComponentArtifactMetadata artifact2 = artifact;
         if (isProjectModule(artifact.getComponentId())) {
             final LocalComponentArtifactMetadata projectArtifact = (LocalComponentArtifactMetadata) artifact;
-            ProjectComponentIdentifier projectId = (ProjectComponentIdentifier) artifact.getComponentId();
-            projectStateRegistry.stateFor(projectId).withMutableState(new Runnable() {
+            final ProjectComponentIdentifier projectId = (ProjectComponentIdentifier) artifact.getComponentId();
+            System.out.println("Jeff ProjectDependencyResolver resolveArtifact starting with projectId " + projectId + " and artifact " + projectArtifact);
+            ProjectState projectState = projectStateRegistry.stateFor(projectId);
+            System.out.println("Jeff ProjectDependencyResolver resolveArtifact got projectState = " + projectState);
+            projectState.withMutableState(new Runnable() {
                 @Override
                 public void run() {
+                    System.out.println("Jeff ProjectDependencyResolver resolveArtifact.inner starting with projectId " + projectId + " and artifact " + projectArtifact);
                     File localArtifactFile = projectArtifact.getFile();
                     if (localArtifactFile != null) {
                         result.resolved(localArtifactFile);
+                        System.out.println("Jeff ProjectDependencyResolver resolveArtifact.inner succeeding with projectId " + projectId + " and artifact " + projectArtifact + " and file " + localArtifactFile);
                     } else {
+                        UncheckedException.throwAsUncheckedException(new Exception("Jeff ProjectDependencyResolver failed to resolve artifact " + artifact2 + " id = " + artifact2.getId() + " componentId = " + artifact2.getComponentId() + " name = " + artifact2.getName() + " projectArtifact = " + projectArtifact + " buildDependencies = " + artifact2.getBuildDependencies()));
                         result.notFound(projectArtifact.getId());
                     }
                 }
             });
+            System.out.println("Jeff ProjectDependencyResolver resolveArtifact ending with projectId " + projectId + " and artifact " + projectArtifact);
         }
     }
 

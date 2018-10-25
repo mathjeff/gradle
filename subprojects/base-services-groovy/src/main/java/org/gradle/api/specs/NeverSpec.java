@@ -15,28 +15,19 @@
  */
 package org.gradle.api.specs;
 
+import groovy.lang.Closure;
+import org.gradle.api.specs.internal.ClosureSpec;
+import org.gradle.internal.Cast;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
 /**
- * A {@link org.gradle.api.specs.Spec} implementation which negates another {@code Spec}.
- * 
- * @param <T> The target type for this Spec
  */
-public class NotSpec<T> implements Spec<T> {
-    private Spec<? super T> sourceSpec;
-
-    public NotSpec(Spec<? super T> sourceSpec) {
-        this.sourceSpec = sourceSpec;
-    }
-
-    Spec<? super T> getSourceSpec() {
-        return sourceSpec;
-    }
-
-    public boolean isSatisfiedBy(T element) {
-        return !sourceSpec.isSatisfiedBy(element);
-    }
-
-    @Override
-    public String toString() {
-      return "NotSpec: " + this.sourceSpec;
-    }
+public class NeverSpec implements Spec<Object> {
+  public boolean isSatisfiedBy(Object element) {
+    return false;
+  }
 }

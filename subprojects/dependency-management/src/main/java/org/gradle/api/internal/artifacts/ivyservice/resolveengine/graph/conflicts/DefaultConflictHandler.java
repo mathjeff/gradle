@@ -84,7 +84,7 @@ public class DefaultConflictHandler implements ModuleConflictHandler {
         ConflictResolutionResult result = new DefaultConflictResolutionResult(conflict.participants, selected);
         resolutionAction.execute(result);
         maybeSetReason(conflict.participants, selected);
-        LOGGER.debug("Selected {} from conflicting modules {}.", selected, conflict.candidates);
+        System.out.println("Selected " + selected + " from conflicting modules " + conflict.candidates);
     }
 
     private void maybeSetReason(Set<ModuleIdentifier> partifipants, ComponentResolutionState selected) {

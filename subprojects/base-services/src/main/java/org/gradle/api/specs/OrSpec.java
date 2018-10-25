@@ -74,4 +74,9 @@ public class OrSpec<T> extends CompositeSpec<T> {
     public int hashCode() {
         return 13 * super.hashCode();
     }
+
+    @Override
+    public String toString() {
+      return "OrSpec:" + super.toString();
+    } 
 }

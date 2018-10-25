@@ -26,12 +26,14 @@ public class ArtifactNotFoundException extends ArtifactResolveException {
 
     private static String format(ComponentArtifactIdentifier artifact, List<String> locations) {
         StringBuilder builder = new StringBuilder();
-        builder.append(String.format("Could not find %s.", artifact.getDisplayName()));
+        builder.append(String.format("Could not find '%s'.", artifact.getDisplayName()));
         if (!locations.isEmpty()) {
             builder.append(String.format("%nSearched in the following locations:"));
             for (String location : locations) {
                 builder.append(String.format("%n    %s", location.replace("%", "%%")));
             }
+        } else {
+            builder.append("\nSearched in no locations!?");
         }
         return builder.toString();
     }

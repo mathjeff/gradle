@@ -16,6 +16,7 @@
 
 package org.gradle.internal.component.local.model;
 
+import org.gradle.internal.UncheckedException;
 import org.gradle.api.artifacts.component.ComponentSelector;
 import org.gradle.api.artifacts.component.ProjectComponentSelector;
 import org.gradle.api.internal.attributes.AttributesSchemaInternal;
@@ -38,6 +39,7 @@ public class DefaultProjectDependencyMetadata implements DependencyMetadata {
         this.selector = selector;
         this.delegate = delegate;
         this.isTransitive = delegate.isTransitive();
+        UncheckedException.throwAsUncheckedException(new Exception("Jeff Created DefaultProjectDependencyMetadata " + this));
     }
 
     @Override

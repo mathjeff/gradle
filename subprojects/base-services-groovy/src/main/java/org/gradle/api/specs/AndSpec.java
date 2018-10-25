@@ -90,4 +90,9 @@ public class AndSpec<T> extends CompositeSpec<T> {
     public int hashCode() {
         return 7 * super.hashCode();
     }
+
+    @Override
+    public String toString() {
+      return "AndSpec:" + super.toString();
+    }
 }

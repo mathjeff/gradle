@@ -48,6 +48,7 @@ class TransformArtifactOperation implements RunnableBuildOperation {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("Executing transform {} on artifact {}", transform.getDisplayName(), artifactId.getDisplayName());
             }
+            System.out.println("Jeff TransformArtifactOperation transform " + transform.getDisplayName() + " on " + artifactId.getDisplayName());
             result = transform.transform(file);
         } catch (Throwable t) {
             failure = t;

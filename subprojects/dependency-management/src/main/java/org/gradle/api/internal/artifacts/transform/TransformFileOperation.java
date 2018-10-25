@@ -45,6 +45,7 @@ class TransformFileOperation implements RunnableBuildOperation {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("Executing transform {} on file {}", transform.getDisplayName(), file);
             }
+            System.out.println("Jeff TransformFileOperation executing transform " + transform.getDisplayName() + " on file " + file);
             result = transform.transform(file);
         } catch (Throwable t) {
             failure = t;

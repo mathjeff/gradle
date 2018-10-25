@@ -16,6 +16,8 @@
 
 package org.gradle.api.internal.artifacts.ivyservice.resolveengine.artifact;
 
+import org.gradle.api.internal.artifacts.ivyservice.resolveengine.graph.builder.EdgeState;
+import org.gradle.internal.component.local.model.DefaultProjectDependencyMetadata;
 import com.google.common.collect.Maps;
 import org.gradle.api.internal.artifacts.ivyservice.resolveengine.excludes.ModuleExclusion;
 import org.gradle.api.internal.artifacts.ivyservice.resolveengine.graph.DependencyGraphEdge;
@@ -64,10 +66,32 @@ public class ResolvedArtifactsGraphVisitor implements DependencyGraphVisitor {
     @Override
     public void visitEdges(DependencyGraphNode node) {
         for (DependencyGraphEdge dependency : node.getIncomingEdges()) {
-            if (dependency.contributesArtifacts()) {
-                DependencyGraphNode parent = dependency.getFrom();
-                ArtifactsForNode artifacts = getArtifacts(dependency, node);
-                artifactResults.visitArtifacts(parent, node, artifacts.artifactSetId, artifacts.artifactSet);
+            System.out.println("Jeff ResolvedArtifactsGraphVisitor visiting " + dependency + ", from = " + dependency.getFrom() + ", selector = " + dependency.getSelector() + ", originalDependency = " + dependency.getOriginalDependency());
+            boolean enabled = true;
+            /*if (dependency instanceof EdgeState) {
+              EdgeState edgeState = (EdgeState)dependency;
+              if (edgeState.getDependencyMetadata() instanceof DefaultProjectDependencyMetadata) {
+                enabled = false;
+              }
+            }*/
+            if (dependency.getReason().isConflictResolution()) {
+              System.out.println("Jeff ResolvedArtifactsGraphVisitor detects conflict resolution contributed to resolution of " + dependency);
+            } else {
+              System.out.println("Jeff ResolvedArtifactsGraphVisitor detects conflict resolution did not contribute to resolution of " + dependency);
+            }
+            if (!enabled) {
+              System.out.println("Jeff ResolvedArtifactsGraphVisitor skipping " + dependency);
+            } else {
+              if (dependency.contributesArtifacts()) {
+                  System.out.println("Jeff ResolvedArtifactsGraphVisitor sees " + dependency + "(" + dependency.getClass() + ") contributes artifacts");
+                  DependencyGraphNode parent = dependency.getFrom();
+                  ArtifactsForNode artifacts = getArtifacts(dependency, node);
+                  artifactResults.visitArtifacts(parent, node, artifacts.artifactSetId, artifacts.artifactSet);
+              } else {
+                  System.out.println("Jeff ResolvedArtifactsGraphVisitor sees " + dependency + " does not contribute artifacts");
+              }
+              System.out.println("Jeff ResolvedArtifactsGraphVisitor done visiting edge " + dependency);
+
             }
         }
         for (LocalFileDependencyMetadata fileDependency : node.getOutgoingFileEdges()) {
@@ -87,9 +111,14 @@ public class ResolvedArtifactsGraphVisitor implements DependencyGraphVisitor {
         ComponentResolveMetadata component = toConfiguration.getOwner().getMetadata();
         ImmutableAttributes overriddenAttributes = dependency.getAttributes();
 
+        System.out.println("Jeff ResolvedArtifactsGraphVisitor.ArtifactsForNode getArtifacts with dependency = " + dependency + "(" + dependency.getClass() + ") and targetConfiguration = " + targetConfiguration);
         List<? extends ComponentArtifactMetadata> artifacts = dependency.getArtifacts(targetConfiguration);
         if (!artifacts.isEmpty()) {
             int id = nextId++;
+            System.out.println("Jeff ResolvedArtifactsGraphVisitor.ArtifactsForNode sees artifacts = " + artifacts);
+            for (ComponentArtifactMetadata metadata : artifacts) {
+              System.out.println("(" + metadata + "(" + metadata.getClass() + "))");
+            }
             ArtifactSet artifactSet = artifactSelector.resolveArtifacts(component, artifacts, overriddenAttributes);
             return new ArtifactsForNode(id, artifactSet);
         }
