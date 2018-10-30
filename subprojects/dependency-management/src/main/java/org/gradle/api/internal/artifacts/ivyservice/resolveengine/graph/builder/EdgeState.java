@@ -25,6 +25,7 @@ import org.gradle.api.artifacts.result.ComponentSelectionReason;
 import org.gradle.api.internal.artifacts.ivyservice.resolveengine.excludes.ModuleExclusion;
 import org.gradle.api.internal.artifacts.ivyservice.resolveengine.graph.DependencyGraphEdge;
 import org.gradle.api.internal.attributes.ImmutableAttributes;
+import org.gradle.internal.component.external.model.ConfigurationBoundExternalDependencyMetadata;
 import org.gradle.internal.component.local.model.DslOriginDependencyMetadata;
 import org.gradle.internal.component.model.ComponentArtifactMetadata;
 import org.gradle.internal.component.model.ComponentResolveMetadata;
@@ -33,6 +34,7 @@ import org.gradle.internal.component.model.DependencyMetadata;
 import org.gradle.internal.component.model.ExcludeMetadata;
 import org.gradle.internal.component.model.IvyArtifactName;
 import org.gradle.internal.resolve.ModuleVersionResolveException;
+
 import org.gradle.util.CollectionUtils;
 
 import javax.annotation.Nullable;
@@ -171,7 +173,23 @@ class EdgeState implements DependencyGraphEdge {
         }
         for (ConfigurationMetadata targetConfiguration : targetConfigurations) {
             NodeState targetNodeState = resolveState.getNode(targetComponent, targetConfiguration);
-            this.targetNodes.add(targetNodeState);
+            ComponentState targetComponentState = targetNodeState.getComponent();
+
+            boolean include = true;
+            String ourVersion = null;
+            if (this.getDependencyMetadata() instanceof ConfigurationBoundExternalDependencyMetadata) {
+              ConfigurationBoundExternalDependencyMetadata converted = (ConfigurationBoundExternalDependencyMetadata)(this.getDependencyMetadata());
+              ourVersion = converted.getDependencyDescriptor().getSelector().getVersion();
+            }
+            String theirVersion = targetComponentState.getVersion();
+
+            if (ourVersion != null && theirVersion != null && ourVersion != theirVersion) {
+              include = false;
+            }
+
+            if (include) {
+              this.targetNodes.add(targetNodeState);
+            }
         }
     }
 
