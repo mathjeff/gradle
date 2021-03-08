@@ -38,6 +38,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.gradle.internal.resources.DefaultResourceLockCoordinationService.unlock;
+import static org.gradle.internal.resources.ResourceLockState.Disposition.FAILED;
 import static org.gradle.internal.resources.ResourceLockState.Disposition.FINISHED;
 import static org.gradle.internal.resources.ResourceLockState.Disposition.RETRY;
 
@@ -80,14 +81,23 @@ public class DefaultPlanExecutor implements PlanExecutor {
      * Blocks until all nodes in the plan have been processed. This method will only return when every node in the plan has either completed, failed or been skipped.
      */
     private void awaitCompletion(final ExecutionPlan executionPlan, final Collection<? super Throwable> failures) {
-        coordinationService.withStateLock(resourceLockState -> {
-            if (executionPlan.allNodesComplete()) {
-                executionPlan.collectFailures(failures);
-                return FINISHED;
-            } else {
-                return RETRY;
+        while (true) {
+            boolean done = coordinationService.withStateLock(resourceLockState -> {
+                if (executionPlan.allNodesComplete()) {
+                    executionPlan.collectFailures(failures);
+                    return FINISHED;
+                } else {
+                    return FAILED;
+                }
+            });
+            if (done) {
+                break;
             }
-        });
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+            }
+        }
     }
 
     private void startAdditionalWorkers(ExecutionPlan executionPlan, Action<? super Node> nodeExecutor, Executor executor, WorkerLease parentWorkerLease) {
@@ -171,7 +181,7 @@ public class DefaultPlanExecutor implements PlanExecutor {
                 }
 
                 if (selected.get() == null && nodesRemaining.get()) {
-                    return RETRY;
+                    return FAILED;
                 } else {
                     return FINISHED;
                 }
@@ -180,6 +190,11 @@ public class DefaultPlanExecutor implements PlanExecutor {
             Node selectedNode = selected.get();
             if (selectedNode != null) {
                 execute(selectedNode, workerLease, nodeExecutor);
+            } else {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                }
             }
             return nodesRemaining.get();
         }
